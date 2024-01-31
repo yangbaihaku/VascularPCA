@@ -57,7 +57,7 @@ def align_procrustes(curves,base_id=0,external_curve=None):
     for i in range(len(curves)):
         curve = curves[i]
         # 对齐当前曲线到基准曲线
-        result = orthogonal(base_curve, curve, translate=True, scale=False)
+        result = orthogonal(base_curve, curve, translate=True, scale=False) # orthogonal：旋转曲线找点之间距离最小的那个，作为对齐结束后的曲线
         # Z是Procrustes变换后的曲线，用它来更新原始曲线
         # curves[i] = Z
         new_curves.append(result['new_b'])

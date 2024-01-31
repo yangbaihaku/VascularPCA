@@ -12,7 +12,7 @@ from scipy.spatial.transform import Rotation as R
 from procrustes import orthogonal
 from myvtk.General import *
 from datetime import datetime
-import geomstats.geometry.pre_shape as pre_shape
+import geomstats.geometry.pre_shape as pre_shape # 黎曼几何计算包
 import geomstats.geometry.discrete_curves as dc
 from geomstats.geometry.euclidean import EuclideanMetric
 from geomstats.geometry.hypersphere import HypersphereMetric
@@ -130,9 +130,9 @@ Typevalues = []
 
 
 
-pre_files = glob.glob("./scaling/resamp_attr_ascii/vmtk64a/*.vtk")
+pre_files = glob.glob("./scaling/resamp_attr_ascii/vmtk64a/*.vtk") # vmodeler搞完的文件
 shapetype = pd.read_csv("./UVCS_class.csv", header=None)
-ill=pd.read_csv("./illcases.txt",header=None)
+ill=pd.read_csv("./illcases.txt",header=None) # 数据差的case，不要
 ill = np.array(ill[0])
 for idx in range(len(pre_files)):
     # filename = pre_files[idx].split("\\")[-1].split(".")[0][:-8]
@@ -146,11 +146,11 @@ for idx in range(len(pre_files)):
     Typevalues.append(new_type_value)
     pt, Curv, Tors, Radius, Abscissas, ptns, ftangent, fnormal, fbinormal = GetMyVtk(pre_files[idx], frenet=1)
     Files.append(pre_files[idx])
-    pt = pt-np.mean(pt,axis=0)
+    pt = pt-np.mean(pt,axis=0) # 质心归零
     # pt = interpolate_pt(pt, 640)
     # pt = pt - (pt[0]+[np.random.uniform(-0.0001,0.0001),np.random.uniform(-0.0001,0.0001),np.random.uniform(-0.0001,0.1)])
     # pt = pt/np.linalg.norm(pt[-1] - pt[0]) * 64
-    unaligned_curves.append(pt[::-1])
+    unaligned_curves.append(pt[::-1]) # 反着写入，为了让看的时候是ICA->MCA
     radii.append(Radius[::-1])
     pre_Curvatures.append(Curv[::-1])
     pre_Torsions.append(Tors[::-1])
@@ -161,6 +161,7 @@ Typevalues = np.array(Typevalues)
 POINTS_NUM = pt.shape[0]
 print ("POINTS_NUM:", POINTS_NUM)
 
+# 初始化离散曲线空间，用一个神奇的包
 r3 = Euclidean(dim=3)
 srv_metric = SRVMetric(r3)
 discrete_curves_space = DiscreteCurves(ambient_manifold=r3, k_sampling_points=POINTS_NUM)
@@ -188,6 +189,7 @@ log.write("Alignment reference data (base_id):{},casename:{}".format(base_id, Fi
 # 设定参考点 p，您可以根据需要修改这个点
 p = np.array([0, 0, 1])  # 例如，令 p 在 z 轴上
 unaligned_curves = np.array([align_endpoints(curve, p) for curve in unaligned_curves])
+# align_endpoints 第一个点和最后一个点的连线和p点的连线重合
 
 fig = plt.figure(figsize=(13, 6),dpi=300)
 ax1 = fig.add_subplot(133)
@@ -330,6 +332,8 @@ preprocessing_pca.PCA_training_and_test()
 preprocess_curves = preprocessing_pca.inverse_transform_from_loadings(preprocessing_pca.train_res).reshape(len(preprocessing_pca.train_res), -1, 3)
 
 Procrustes_curves = preprocess_curves
+
+#------------- 前处理结束 -----------------#
 
 # log.write("Procrustes_curves is aligned again by endpoints.\n")
 # Procrustes_curves = np.array([align_endpoints(curve, p) for curve in Procrustes_curves])
